@@ -2,7 +2,7 @@ import React from "react";
 
 const WritePage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background pt-20"> 
+    <div className="bg-background"> 
       <div className="container mx-auto">
         <div className="rounded-xl border bg-card text-card-foreground shadow max-w-3xl mx-auto">
           <div className="flex flex-col space-y-1.5 p-4"> 

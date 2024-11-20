@@ -64,7 +64,7 @@ const Header: React.FC = () => {
           BitBlogs
         </a>
 
-        <nav className="hidden md:flex space-x-4 ">
+        <nav className="hidden md:flex space-x-4 ml-[150px]">
           <a className="text-gray-400 " href="/">
             {t('home')}
           </a>
@@ -135,11 +135,9 @@ const Header: React.FC = () => {
     </Popover>
        
 
-          <button className="bg-blue-500 px-4 py-2 rounded-md">
             <Link className="text-white" to="/signin">
-              {t('signIn')}
+            <button className="bg-blue-500 px-4 py-2 rounded-md">{t('signIn')}</button>
             </Link>
-          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:bg-gray-500 focus:outline-none bg-white dark:bg-gray-800 px-3 py-2 rounded-md">

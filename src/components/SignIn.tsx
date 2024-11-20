@@ -1,67 +1,106 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "../supabase/auth";
 
-const SignIn: React.FC = () => {
+const SignInPage: React.FC = () => {
   const { t } = useTranslation();
+
+  const [loginPayload, setLoginPayload] = useState({
+    email: "",
+    password: "",
+  });
+
+  const { mutate: handleLogin } = useMutation({
+    mutationKey: ["login"],
+    mutationFn: login,
+  });
+
+  const handleSubmit = () => {
+    const isEmailFilled = !!loginPayload.email;
+    const isPasswordFilled = !!loginPayload.password;
+
+    if (isEmailFilled && isPasswordFilled) {
+      handleLogin(loginPayload);
+    } 
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="rounded-xl border bg-card text-card-foreground shadow w-full max-w-md">
         <div className="flex flex-col space-y-1.5 p-6">
-          <div className="tracking-tight text-2xl font-bold text-center">
-            {t('signInPage.title')}
+          <div className="tracking-tight text-2xl font-bold text-center dark:text-white">
+            {t("signInPage.title")}
           </div>
-          <div className="text-sm text-muted-foreground text-center">
-            {t('signInPage.subtitle')}
+          <div className="text-sm text-muted-foreground text-center dark:text-white">
+            {t("signInPage.subtitle")}
           </div>
         </div>
         <div className="p-6 pt-0">
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none dark:text-white"
                 htmlFor="email"
               >
-                {t('signInPage.emailLabel')}
+                {t("signInPage.emailLabel")}
               </label>
               <input
+                name="email"
                 type="email"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 id="email"
-                placeholder={t('signInPage.emailPlaceholder')}
+                value={loginPayload.email}
+                onChange={(e) =>
+                  setLoginPayload({
+                    email: e.target.value,
+                    password: loginPayload.password,
+                  })
+                }
+                placeholder={t("signInPage.emailPlaceholder")}
+                className="flex h-9 w-full rounded-md border px-3 py-1"
+                required
               />
             </div>
             <div className="space-y-2">
               <label
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none dark:text-white"
                 htmlFor="password"
               >
-                {t('signInPage.passwordLabel')}
+                {t("signInPage.passwordLabel")}
               </label>
               <input
+                name="password"
                 type="password"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 id="password"
-                placeholder={t('signInPage.passwordPlaceholder')}
+                value={loginPayload.password}
+                onChange={(e) =>
+                  setLoginPayload({
+                    email: loginPayload.email,
+                    password: e.target.value,
+                  })
+                }
+                placeholder={t("signInPage.passwordPlaceholder")}
+                className="flex h-9 w-full rounded-md border px-3 py-1"
+                required
               />
             </div>
             <button
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
-              type="button"
+              className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90"
+              type="submit"
             >
-              {t('signInPage.signInButton')}
+              {t("signInPage.signInButton")}
             </button>
-          </div>
+          </form>
         </div>
         <div className="items-center p-6 pt-0 flex justify-between">
           <Link className="text-sm text-primary hover:underline" to="/forgot-password">
-            {t('signInPage.forgotPassword')}
+            {t("signInPage.forgotPassword")}
           </Link>
-          <p className="text-sm text-muted-foreground">
-            {t('signInPage.noAccount')}{" "}
+          <p className="text-sm text-muted-foreground dark:text-gray-400">
+            {t("signInPage.noAccount")}{" "}
             <Link className="text-primary hover:underline" to="/register">
-              {t('signInPage.signUpLink')}
+              {t("signInPage.signUpLink")}
             </Link>
           </p>
         </div>
@@ -70,4 +109,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default SignInPage;

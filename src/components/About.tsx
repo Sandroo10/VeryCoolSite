@@ -1,5 +1,12 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./ui/accordion"
+
 
 const AboutPage: React.FC = () => {
   const { t } = useTranslation();
@@ -16,6 +23,39 @@ const AboutPage: React.FC = () => {
         <p className="text-muted-foreground text-lg leading-relaxed mt-4">
           {t("aboutpage.paragraph2")}
         </p>
+        <div className="mt-11">
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="bg-black text-white dark:bg-white dark:text-black">
+                Is it accessible?
+              </AccordionTrigger>
+            <AccordionContent className="bg-black text-white dark:bg-white dark:text-black">
+              Yes. It adheres to the WAI-ARIA design pattern.
+            </AccordionContent>
+          </AccordionItem>
+          </Accordion>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="bg-black text-white dark:bg-white dark:text-black">
+                Is it Cool?
+              </AccordionTrigger>
+            <AccordionContent className="bg-black text-white dark:bg-white dark:text-black">
+              Yes. Very much.
+            </AccordionContent>
+          </AccordionItem>
+          </Accordion>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="bg-black text-white dark:bg-white dark:text-black">
+                Are Joni and Nika goated?
+              </AccordionTrigger>
+            <AccordionContent className="bg-black text-white dark:bg-white dark:text-black">
+              Yes. They truly are.
+            </AccordionContent>
+          </AccordionItem>
+          </Accordion>
+        </div>
+
       </div>
     </div>
   );
