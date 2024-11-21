@@ -88,6 +88,7 @@ const SignInPage: React.FC = () => {
             <button
               className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90"
               type="submit"
+              onClick={handleSubmit}
             >
               {t("signInPage.signInButton")}
             </button>

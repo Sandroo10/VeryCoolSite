@@ -90,6 +90,7 @@ const RegisterPage: React.FC = () => {
             <button
               className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90 dark:text-black"
               type="submit"
+              onClick={handleSubmit}
             >
               {t("registerPage.signUpButton")}
             </button>
