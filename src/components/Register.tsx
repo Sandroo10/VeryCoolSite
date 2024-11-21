@@ -17,7 +17,8 @@ const RegisterPage: React.FC = () => {
     mutationFn: register,
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault
     const isEmailFilled = !!registerPayload.email;
     const isPasswordFilled = !!registerPayload.password;
 
@@ -48,8 +49,6 @@ const RegisterPage: React.FC = () => {
               </label>
               <input
                 name="email"
-                type="email"
-                id="email"
                 value={registerPayload.email}
                 onChange={(e) => {
                   setRegisterPayload({
@@ -71,8 +70,6 @@ const RegisterPage: React.FC = () => {
               </label>
               <input
                 name="password"
-                type="password"
-                id="password"
                 value={registerPayload.password}
                 onChange={(e) => {
                   setRegisterPayload({
@@ -90,7 +87,6 @@ const RegisterPage: React.FC = () => {
             <button
               className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90 dark:text-black"
               type="submit"
-              onClick={handleSubmit}
             >
               {t("registerPage.signUpButton")}
             </button>

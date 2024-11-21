@@ -8,14 +8,10 @@ import RegisterPage from "./components/Register";
 import AboutPage from "./components/About";
 import WritePage from "./components/WritePage";
 import { ThemeProvider } from "./components/theme-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
 
 const App: React.FC = () => {
  
   return (
-    <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
     <BrowserRouter>
     <Header/>
@@ -30,7 +26,6 @@ const App: React.FC = () => {
     </Routes>
     </BrowserRouter>
     </ThemeProvider>
-    </QueryClientProvider>
   )
 }
 
