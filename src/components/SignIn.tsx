@@ -17,7 +17,8 @@ const SignInPage: React.FC = () => {
     mutationFn: login,
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     const isEmailFilled = !!loginPayload.email;
     const isPasswordFilled = !!loginPayload.password;
 

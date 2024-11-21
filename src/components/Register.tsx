@@ -18,7 +18,7 @@ const RegisterPage: React.FC = () => {
   });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault
+    e.preventDefault();
     const isEmailFilled = !!registerPayload.email;
     const isPasswordFilled = !!registerPayload.password;
 
