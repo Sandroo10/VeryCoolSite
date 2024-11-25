@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { ModeToggle } from './mode-toggle/index';
 import { cn } from "../lib/utils"
 import { Check } from "lucide-react"
+import { logout } from '../supabase/auth';
 import {
   Command,
   CommandEmpty,
@@ -23,6 +24,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover"
+import { useAuth } from './context/AuthContext';
+import { useMutation } from '@tanstack/react-query';
  
 const frameworks = [
   {
@@ -51,11 +54,16 @@ const frameworks = [
 const Header: React.FC = () => {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
+  const {user} = useAuth();
   const { t, i18n } = useTranslation();
     const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
     localStorage.setItem('language', language); 
   };
+  const {mutate:handleLougout} = useMutation({
+    mutationKey:['logout'],
+    mutationFn: logout, 
+  })
 
   return (
     <header className="border-b w-full fixed top-0 z-50 left-0">
@@ -132,12 +140,21 @@ const Header: React.FC = () => {
           </CommandList>
         </Command>
       </PopoverContent>
-    </Popover>
-       
-
-            <Link className="text-white" to="/signin">
-            <button className="bg-blue-500 px-4 py-2 rounded-md">{t('signIn')}</button>
-            </Link>
+    </Popover>  
+      
+            <div>
+              {user ? (
+                <div>
+                  <Link className="text-white" to="/profile">
+                    <button className="bg-blue-500 px-4 py-2 rounded-md">Profile</button>
+                  </Link><button onClick={() => handleLougout()} className="bg-blue-500 px-4 py-2 rounded-md">Logout</button>
+                </div>
+              ) : (
+                <Link className="text-white" to="/signin">
+                  <button className="bg-blue-500 px-4 py-2 rounded-md">{t('signIn')}</button>
+                </Link>
+              )}
+            </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:bg-gray-500 focus:outline-none bg-white dark:bg-gray-800 px-3 py-2 rounded-md">
