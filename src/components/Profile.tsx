@@ -8,7 +8,7 @@ import ProfileForm from "./ProfileForm.tsx";
 
 const Profile:React.FC = () =>{
     
-    const {user, handleSetAvatar} = useAuth();
+  const {user, handleSetAvatar} = useAuth();
 
   const [profilePayload, setProfilePayload] = useState<FillProfileInfoPayload>({
     avatar_url: "",
@@ -18,7 +18,9 @@ const Profile:React.FC = () =>{
   });
   
 
-  const {mutate: handleFillProfileInfo} = useMutation({
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const { mutate: handleFillProfileInfo } = useMutation({
     mutationKey: ["fill-profile-info"],
     mutationFn: fillProfileInfo,
     onSuccess: () => {
@@ -28,38 +30,41 @@ const Profile:React.FC = () =>{
     onError: (error: any) => {
       console.log(`Error updating profile: ${error.message}`);
     },
-  })
-
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-      handleFillProfileInfo({...profilePayload, id: user?.user?.id });
+    handleFillProfileInfo({ ...profilePayload, id: user?.user?.id });
   };
 
-  const [isEditing, setIsEditing] = useState(false);
+  useEffect(() => {
+    console.log("ProfilePayload updated:", profilePayload);
+  }, [profilePayload]);
 
   useEffect(() => {
     if (user) {
-      getProfileInfo(user.user.id).then((res) => {
-        if ( res?.data && Array.isArray(res.data) && res?.data?.length > 0) {
-
-          const { avatar_url, full_name_ka, full_name_en, username } = res.data[0];
-          console.log({ avatar_url, full_name_ka, full_name_en, username });
-
-          handleSetAvatar(avatar_url);
-      
-          setProfilePayload({
-            avatar_url: avatar_url || "",
-            full_name_en: full_name_en || "",
-            full_name_ka: full_name_ka || "",
-            username: username || "",
-          });
-        } else {
-          console.warn("No data available");
-        }
-      });
+      getProfileInfo(user.user.id)
+        .then((profile) => {
+          if (profile) {
+              
+            console.log("Valid profile data:", profile); // Confirm it's valid
+            const { avatar_url, full_name_ka, full_name_en, username } = profile;
+            setProfilePayload({
+              avatar_url: avatar_url || "",
+              full_name_en: full_name_en || "",
+              full_name_ka: full_name_ka || "",
+              username: username || "",
+            });
+          } else {
+            console.warn("No valid profile data received");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching profile info:", error);
+        });
     }
   }, [user]);
+  
   
 
     return(
