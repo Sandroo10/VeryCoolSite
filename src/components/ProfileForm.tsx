@@ -92,15 +92,15 @@ const ProfileForm: React.FC<{ onFormSubmit: (e: React.FormEvent) => void,
 
           <div className="space-y-2">
             <label
-              htmlFor="phoneNumber"
+              htmlFor="userName"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Phone Number
+              Username
             </label>
             <input
             
-              id="phoneNumber"
-              name="phoneNumber"
+              id="userName"
+              name="userName"
               placeholder=""
               required
               value={profilePayload.username}

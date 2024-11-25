@@ -19,6 +19,10 @@ import {
   CommandItem,
   CommandList,
 } from "./ui/command"
+import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
+import { AvatarFallback } from './ui/avatar';
+import { avataaars } from '@dicebear/collection';
+import { createAvatar } from '@dicebear/core';
 import {
   Popover,
   PopoverContent,
@@ -54,7 +58,7 @@ const frameworks = [
 const Header: React.FC = () => {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
-  const {user} = useAuth();
+  const {user,avatar} = useAuth();
   const { t, i18n } = useTranslation();
     const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
@@ -64,6 +68,11 @@ const Header: React.FC = () => {
     mutationKey:['logout'],
     mutationFn: logout, 
   })
+  const avatardefault = createAvatar(avataaars, {
+    seed: 'Aneka'
+  });
+  
+  const svg = avatardefault.toString();
 
   return (
     <header className="border-b w-full fixed top-0 z-50 left-0">
@@ -144,10 +153,14 @@ const Header: React.FC = () => {
       
             <div>
               {user ? (
-                <div>
+                <div className='flex items-center'>
                   <Link className="text-white" to="/profile">
-                    <button className="bg-blue-500 px-4 py-2 rounded-md">Profile</button>
-                  </Link><button onClick={() => handleLougout()} className="bg-blue-500 px-4 py-2 rounded-md">Logout</button>
+                  <Avatar >
+                  <AvatarImage src={avatar} />
+                  <AvatarFallback><img src={svg}/></AvatarFallback>
+                </Avatar>
+                  </Link>
+                  <button onClick={() => handleLougout()} className="bg-blue-500 px-4 py-2 rounded-md">Logout</button>
                 </div>
               ) : (
                 <Link className="text-white" to="/signin">
