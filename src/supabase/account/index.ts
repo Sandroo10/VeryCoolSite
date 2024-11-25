@@ -3,17 +3,16 @@ import { FillProfileInfoPayload } from "./index.types";
 
 export const fillProfileInfo = async (payload: FillProfileInfoPayload) => {
 
-    // Perform the upsert operation and wait for the response
     const { data, error } = await supabase
       .from("profiles")
-      .upsert(payload as any) // Ensure payload is typed correctly
-      .throwOnError(); // Ensure errors are thrown if any
+      .upsert(payload as any) 
+      .throwOnError(); 
 
     if (error) {
-      throw new Error(error.message); // Throw an error if any occurs
+      throw new Error(error.message); 
     }
 
-    return data; // Return the data from the upsert operation
+    return data; 
 };
 
 export const getProfileInfo = (id:string | number) => {
