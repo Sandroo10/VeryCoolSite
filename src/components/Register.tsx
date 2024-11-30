@@ -1,29 +1,32 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import { register } from "../supabase/auth";
 
 const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
-
-  const [registerPayload, setRegisterPayload] = useState({
-    email: "",
-    password: "",
-  });
 
   const { mutate: handleRegister } = useMutation({
     mutationKey: ["register"],
     mutationFn: register,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const isEmailFilled = !!registerPayload.email;
-    const isPasswordFilled = !!registerPayload.password;
+  const {
+    register: formRegister,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    if (isEmailFilled && isPasswordFilled) {
-      handleRegister(registerPayload);
+  const onSubmit = (data: { email: string; password: string }) => {
+    if (data.email && data.password) {
+      handleRegister(data);
     }
   };
 
@@ -39,7 +42,7 @@ const RegisterPage: React.FC = () => {
           </div>
         </div>
         <div className="p-6 pt-0">
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <label
                 className="text-sm font-medium leading-none dark:text-white"
@@ -48,18 +51,22 @@ const RegisterPage: React.FC = () => {
                 {t("registerPage.emailLabel")}
               </label>
               <input
+                {...formRegister("email", {
+                  required: t("registerPage.emailRequired"),
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                    message: t("registerPage.emailInvalid"),
+                  },
+                })}
                 name="email"
-                value={registerPayload.email}
-                onChange={(e) => {
-                  setRegisterPayload({
-                    email: e.target.value,
-                    password: registerPayload.password,
-                  });
-                }}
                 placeholder={t("registerPage.emailPlaceholder")}
-                className="flex h-9 w-full rounded-md border px-3 py-1"
-                required
+                className={`flex h-9 w-full rounded-md border px-3 py-1 ${
+                  errors.email ? "border-red-500" : ""
+                }`}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label
@@ -69,20 +76,29 @@ const RegisterPage: React.FC = () => {
                 {t("registerPage.passwordLabel")}
               </label>
               <input
+                {...formRegister("password", {
+                  required: t("registerPage.passwordRequired"),
+                  minLength: {
+                    value: 6,
+                    message: t("registerPage.passwordMinLength"),
+                  },
+                  maxLength: {
+                    value: 20,
+                    message: t("registerPage.passwordMaxLength"),
+                  },
+                })}
                 name="password"
-                value={registerPayload.password}
-                onChange={(e) => {
-                  setRegisterPayload({
-                    email: registerPayload.email,
-                    password: e.target.value,
-                  });
-                }}
+                type="password"
                 placeholder={t("registerPage.passwordPlaceholder")}
-                className="flex h-9 w-full rounded-md border px-3 py-1"
-                required
+                className={`flex h-9 w-full rounded-md border px-3 py-1 ${
+                  errors.password ? "border-red-500" : ""
+                }`}
               />
-            </div>
-            <div className="space-y-2">
+              {errors.password && (
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
             <button
               className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90 dark:text-black"

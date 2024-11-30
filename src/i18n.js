@@ -71,7 +71,12 @@ i18n.use(initReactI18next).init({
           confirmPasswordLabel: "Confirm Password",
           signUpButton: "Sign Up",
           haveAccount: "Already have an account?",
-          signInLink: "Log in"
+          signInLink: "Log in",
+          emailRequired: "Email is requried",
+          emailInvalid: "please input a valid Email",
+          passwordRequired: "Password is required",
+          passwordMinLength: "Password needs to be minimum 6 letters",
+          passwordMaxLength: "Password can't exceed 20 letters"
         },
         signInPage: {
           title: "Log in to BitBlogs",
@@ -83,9 +88,26 @@ i18n.use(initReactI18next).init({
           signInButton: "Log In",
           forgotPassword: "Forgot password?",
           noAccount: "Don't have an account?",
-          signUpLink: "Sign up"
-        }
-        
+          signUpLink: "Sign up",
+          emailRequired: "Email is requried",
+          emailInvalid: "please input a valid Email",
+          passwordRequired: "Password is required",
+          passwordMinLength: "Password needs to be minimum 6 letters",
+        },
+        profileForm: {
+          fullNameEnLabel: "Full Name (English)",
+          fullNameEnRequired: "Full Name (English) is required",
+          fullNameEnMinLength: "Full Name (English) must be at least 3 characters",
+          fullNameKaLabel: "Full Name (Georgian)",
+          fullNameKaRequired: "Full Name (Georgian) is required",
+          fullNameKaPattern: "Full Name (Georgian) must contain only Georgian letters",
+          avatarUrlLabel: "Avatar URL",
+          avatarUrlPattern: "Avatar URL must be a valid image URL (png, jpg, jpeg, svg, gif)",
+          usernameLabel: "Username",
+          usernameRequired: "Username is required",
+          usernameMinLength: "Username must be at least 4 characters",
+          submitButton: "Submit",
+        },
       },
       
       
@@ -157,7 +179,12 @@ i18n.use(initReactI18next).init({
           confirmPasswordLabel: "გააძლიერეთ პაროლი",
           signUpButton: "რეგისტრაცია",
           haveAccount: "მომხმარებელი გაქვს?",
-          signInLink: "შესვლა"
+          signInLink: "შესვლა",
+          emailRequired: "Email ველი სავალდებულოა.",
+          emailInvalid: "გთხოვთ, შეიყვანეთ სწორი Email მისამართი.",
+          passwordRequired: "Password ველი სავალდებულოა.",
+          passwordMinLength: "Password უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს.",
+          passwordMaxLength: "Password არ უნდა აჭარბებდეს 20 სიმბოლოს."
         },
         signInPage: {
           title: "შესვლა BitBlogs-ზე",
@@ -169,8 +196,26 @@ i18n.use(initReactI18next).init({
           signInButton: "შესვლა",
           forgotPassword: "დაგავიწყდათ პაროლი?",
           noAccount: "არ გაქვთ ანგარიში?",
-          signUpLink: "რეგისტრაცია"
-        }
+          signUpLink: "რეგისტრაცია",
+          emailRequired: "Email ველი სავალდებულოა.",
+          emailInvalid: "გთხოვთ, შეიყვანეთ სწორი Email მისამართი.",
+          passwordRequired: "Password ველი სავალდებულოა.",
+          passwordMinLength: "Password უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს."
+        },
+        profileForm: {
+          fullNameEnLabel: "სახელი (ინგლისური)",
+          fullNameEnRequired: "სახელი (ინგლისური) სავალდებულოა",
+          fullNameEnMinLength: "სახელი (ინგლისური) უნდა იყოს მინიმუმ 3 სიმბოლო",
+          fullNameKaLabel: "სახელი (ქართული)",
+          fullNameKaRequired: "სახელი (ქართული) სავალდებულოა",
+          fullNameKaPattern: "სახელი (ქართული) უნდა შეიცავდეს მხოლოდ ქართულ ასოებს",
+          avatarUrlLabel: "ავატარის URL",
+          avatarUrlPattern: "ავატარის URL უნდა იყოს სწორი სურათის ბმული (png, jpg, jpeg, svg, gif)",
+          usernameLabel: "მომხმარებლის სახელი",
+          usernameRequired: "მომხმარებლის სახელი სავალდებულოა",
+          usernameMinLength: "მომხმარებლის სახელი უნდა იყოს მინიმუმ 4 სიმბოლო",
+          submitButton: "გაგზავნა",
+        },
       },
       
       

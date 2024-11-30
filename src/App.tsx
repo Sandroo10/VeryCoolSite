@@ -12,7 +12,6 @@ import { supabase } from "./supabase";
 import { useEffect } from "react";
 import { useAuth } from "./components/context/AuthContext";
 import Profile from "./components/Profile";
-import AuthGuardSignIn from "./components/route-guards/AuthGuardSignIn";
 import AuthGuardSignOut from "./components/route-guards/AuthGuardSignOut";
 
 function App() {
@@ -39,9 +38,9 @@ function App() {
     <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/posts/1" element={<Post1Page />} />
-        <Route path="/signin" element={<AuthGuardSignIn><SignIn/></AuthGuardSignIn>} />
+        <Route path="/signin" element={<SignIn/>}/>
         <Route path="/profile" element={<AuthGuardSignOut><Profile /></AuthGuardSignOut>} />
-        <Route path="/register" element={<AuthGuardSignIn><RegisterPage /></AuthGuardSignIn>} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/write" element={<WritePage />} />
         <Route path="/about" element={<AboutPage />} />
         

@@ -1,34 +1,38 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import { login } from "../supabase/auth";
 
 const SignInPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [loginPayload, setLoginPayload] = useState({
-    email: "",
-    password: "",
-  });
-
   const { mutate: handleLogin } = useMutation({
     mutationKey: ["login"],
     mutationFn: login,
     onSuccess: () => {
-      navigate('/')
+      navigate("/");
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const isEmailFilled = !!loginPayload.email;
-    const isPasswordFilled = !!loginPayload.password;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    if (isEmailFilled && isPasswordFilled) {
-      handleLogin(loginPayload);
-    } 
+  const onSubmit = (data: { email: string; password: string }) => {
+    const { email, password } = data;
+    if (email && password) {
+      handleLogin(data);
+    }
   };
 
   return (
@@ -43,7 +47,7 @@ const SignInPage: React.FC = () => {
           </div>
         </div>
         <div className="p-6 pt-0">
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <label
                 className="text-sm font-medium leading-none dark:text-white"
@@ -52,20 +56,24 @@ const SignInPage: React.FC = () => {
                 {t("signInPage.emailLabel")}
               </label>
               <input
+                {...register("email", {
+                  required: t("signInPage.emailRequired"),
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                    message: t("signInPage.emailInvalid"),
+                  },
+                })}
                 name="email"
                 type="email"
                 id="email"
-                value={loginPayload.email}
-                onChange={(e) =>
-                  setLoginPayload({
-                    email: e.target.value,
-                    password: loginPayload.password,
-                  })
-                }
                 placeholder={t("signInPage.emailPlaceholder")}
-                className="flex h-9 w-full rounded-md border px-3 py-1"
-                required
+                className={`flex h-9 w-full rounded-md border px-3 py-1 ${
+                  errors.email ? "border-red-500" : ""
+                }`}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label
@@ -75,25 +83,28 @@ const SignInPage: React.FC = () => {
                 {t("signInPage.passwordLabel")}
               </label>
               <input
+                {...register("password", {
+                  required: t("signInPage.passwordRequired"),
+                  minLength: {
+                    value: 6,
+                    message: t("signInPage.passwordMinLength"),
+                  },
+                })}
                 name="password"
                 type="password"
                 id="password"
-                value={loginPayload.password}
-                onChange={(e) =>
-                  setLoginPayload({
-                    email: loginPayload.email,
-                    password: e.target.value,
-                  })
-                }
                 placeholder={t("signInPage.passwordPlaceholder")}
-                className="flex h-9 w-full rounded-md border px-3 py-1"
-                required
+                className={`flex h-9 w-full rounded-md border px-3 py-1 ${
+                  errors.password ? "border-red-500" : ""
+                }`}
               />
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password.message}</p>
+              )}
             </div>
             <button
               className="h-9 w-full bg-primary text-white rounded-md hover:bg-primary/90"
               type="submit"
-              onClick={handleSubmit}
             >
               {t("signInPage.signInButton")}
             </button>

@@ -1,7 +1,8 @@
-export type FillProfileInfoPayload = {
-    username:string;
-    full_name_ka: string;
-    full_name_en: string;
-    avatar_url: string;
+export interface FillProfileInfoPayload {
+    avatar_url: string | null;
+    full_name_en: string | null;
+    full_name_ka: string | null;
+    username: string | null;
     id?:string;
-}
+  }
+  

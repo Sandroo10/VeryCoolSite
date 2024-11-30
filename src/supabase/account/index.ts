@@ -2,17 +2,17 @@ import { supabase } from "..";
 import { FillProfileInfoPayload } from "./index.types";
 
 export const fillProfileInfo = async (payload: FillProfileInfoPayload) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(payload as any)
+    .select("*") // Select the updated data
+    .single(); // Assuming you're updating a single profile
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .upsert(payload as any) 
-      .throwOnError(); 
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    if (error) {
-      throw new Error(error.message); 
-    }
-
-    return data; 
+  return data; // Return the updated profile data
 };
 
 export const getProfileInfo = async (id: string | number) => {
