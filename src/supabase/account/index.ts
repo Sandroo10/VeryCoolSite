@@ -5,14 +5,14 @@ export const fillProfileInfo = async (payload: FillProfileInfoPayload) => {
   const { data, error } = await supabase
     .from("profiles")
     .upsert(payload as any)
-    .select("*") // Select the updated data
-    .single(); // Assuming you're updating a single profile
+    .select("*") 
+    .single(); 
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data; // Return the updated profile data
+  return data;
 };
 
 export const getProfileInfo = async (id: string | number) => {
@@ -20,12 +20,12 @@ export const getProfileInfo = async (id: string | number) => {
     .from("profiles")
     .select("*")
     .eq("id", id)
-    .single(); // Use .single() if expecting one result
+    .single(); 
 
   if (error) {
     console.error("Error fetching profile info:", error.message);
-    throw new Error(error.message); // Optional: throw the error for higher-level handling
+    throw new Error(error.message); 
   }
 
-  return data; // Return the profile data if successful
+  return data; 
 };
