@@ -1,7 +1,8 @@
 import React from "react";
-import { supabase } from "@/supabase";
+import { supabase } from "../supabase";
 import { useForm, Controller } from "react-hook-form";
-import { useAuth } from "@/components/context/AuthContext"; // Updated import to use your auth context
+import { useAuth } from "../components/context/AuthContext";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 type BlogPostValues = {
   title_ka: string;
@@ -9,6 +10,7 @@ type BlogPostValues = {
   description_ka: string;
   description_en: string;
   image_url: File | null;
+  created_at: string | null;
 };
 
 const defaultValues = {
@@ -17,65 +19,54 @@ const defaultValues = {
   description_ka: "",
   description_en: "",
   image_url: null,
+  created_at: "",
 };
 
 const WritePage: React.FC = () => {
-  const { user } = useAuth(); // Using your custom auth hook
-  const [tags, setTags] = React.useState<string[]>([]);
-  const [tagInput, setTagInput] = React.useState("");
-  
+  const { user } = useAuth();
+  const navigate = useNavigate(); // Initialize useNavigate
+
   const { control, handleSubmit } = useForm<BlogPostValues>({
-    defaultValues
+    defaultValues,
   });
-
-  const addTag = () => {
-    if (tagInput.trim()) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
 
   const onSubmit = async (formValues: BlogPostValues) => {
     try {
-      let imageUrl = null;
-      
-      if (formValues.image_file) {
+      let imageUrl: string | null = null;
+
+      if (formValues.image_url) {
         const { data, error } = await supabase.storage
           .from("blog_images")
           .upload(
-            `${user?.id}-${Date.now()}-${formValues.image_file.name}`,
-            formValues.image_file
+            `${user?.id}-${Date.now()}-${formValues.image_url.name}`,
+            formValues.image_url
           );
-          
+
         if (error) throw error;
-        imageUrl = data?.fullPath;
+        imageUrl = data?.path || null;
       }
 
-      await supabase.from("blogs").insert({
+      const { error: insertError } = await supabase.from("blogs").insert({
         title_ka: formValues.title_ka,
         title_en: formValues.title_en,
         description_ka: formValues.description_ka,
         description_en: formValues.description_en,
-        image_url,
+        image_url: imageUrl,
         user_id: user?.id,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       });
 
-      if (error) throw error;
-      
-      console.log("Successfully created blog:", data);
-      
+      if (insertError) throw insertError;
+
+      console.log("Successfully created blog post");
+      navigate("/"); // Redirect to home page
     } catch (error) {
-      console.error("Error creating blog:", error);
+      console.error("Error creating blog post:", error);
     }
   };
 
   return (
-    <div className="bg-background">
+    <div className="bg-background mt-8">
       <div className="container mx-auto">
         <div className="rounded-xl border bg-card text-card-foreground shadow max-w-3xl mx-auto">
           <div className="flex flex-col space-y-1.5 p-4">
@@ -85,16 +76,16 @@ const WritePage: React.FC = () => {
             <form className="space-y-5 max-h-screen overflow-auto" onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Title
+                  Title (English)
                 </label>
                 <Controller
                   control={control}
-                  name="title"
+                  name="title_en"
                   render={({ field }) => (
                     <input
                       {...field}
                       className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-                      placeholder="Enter your post title"
+                      placeholder="Enter your post title in English"
                       required
                     />
                   )}
@@ -103,16 +94,34 @@ const WritePage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Content
+                  Title (Georgian)
                 </label>
                 <Controller
                   control={control}
-                  name="content"
+                  name="title_ka"
+                  render={({ field }) => (
+                    <input
+                      {...field}
+                      className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+                      placeholder="Enter your post title in Georgian"
+                      required
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Content (English)
+                </label>
+                <Controller
+                  control={control}
+                  name="description_en"
                   render={({ field }) => (
                     <textarea
                       {...field}
                       className="flex min-h-[50px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-                      placeholder="Write your post content here..."
+                      placeholder="Write your post content in English..."
                       rows={8}
                       required
                     />
@@ -122,71 +131,21 @@ const WritePage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Cover Image
+                  Content (Georgian)
                 </label>
                 <Controller
                   control={control}
-                  name="image_file"
-                  render={({ field: { onChange } }) => (
-                    <input
-                      type="file"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        onChange(file);
-                      }}
-                      className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-                      accept="image/*"
+                  name="description_ka"
+                  render={({ field }) => (
+                    <textarea
+                      {...field}
+                      className="flex min-h-[50px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+                      placeholder="Write your post content in Georgian..."
+                      rows={8}
+                      required
                     />
                   )}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Tags
-                </label>
-                <div className="flex flex-col gap-2">
-                  <div className="flex space-x-2">
-                    <input
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      className="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-                      placeholder="Add a tag"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addTag();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={addTag}
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 px-4 py-2"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-sm"
-                        >
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="text-primary hover:text-primary/70"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
 
               <button
