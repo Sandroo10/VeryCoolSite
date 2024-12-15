@@ -2,7 +2,8 @@ import React from "react";
 import { supabase } from "../supabase";
 import { useForm, Controller } from "react-hook-form";
 import { useAuth } from "../components/context/AuthContext";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 type BlogPostValues = {
   title_ka: string;
@@ -10,30 +11,29 @@ type BlogPostValues = {
   description_ka: string;
   description_en: string;
   image_url: File | null;
-  created_at: string | null;
 };
 
-const defaultValues = {
+const defaultValues: BlogPostValues = {
   title_ka: "",
   title_en: "",
   description_ka: "",
   description_en: "",
   image_url: null,
-  created_at: "",
 };
 
 const WritePage: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const { control, handleSubmit } = useForm<BlogPostValues>({
     defaultValues,
   });
 
-  const onSubmit = async (formValues: BlogPostValues) => {
-    try {
+  // Mutation for creating a blog post
+  const mutation = useMutation<void, Error, BlogPostValues>({
+    mutationFn: async (formValues) => {
       let imageUrl: string | null = null;
-
+  
       if (formValues.image_url) {
         const { data, error } = await supabase.storage
           .from("blog_images")
@@ -41,11 +41,11 @@ const WritePage: React.FC = () => {
             `${user?.id}-${Date.now()}-${formValues.image_url.name}`,
             formValues.image_url
           );
-
+  
         if (error) throw error;
         imageUrl = data?.path || null;
       }
-
+  
       const { error: insertError } = await supabase.from("blogs").insert({
         title_ka: formValues.title_ka,
         title_en: formValues.title_en,
@@ -55,14 +55,21 @@ const WritePage: React.FC = () => {
         user_id: user?.id,
         created_at: new Date().toISOString(),
       });
-
+  
       if (insertError) throw insertError;
-
+    },
+    onSuccess: () => {
       console.log("Successfully created blog post");
-      navigate("/"); // Redirect to home page
-    } catch (error) {
+      navigate("/");
+    },
+    onError: (error) => {
       console.error("Error creating blog post:", error);
-    }
+    },
+  });
+  
+
+  const onSubmit = (formValues: BlogPostValues) => {
+    mutation.mutate(formValues);
   };
 
   return (
@@ -73,7 +80,10 @@ const WritePage: React.FC = () => {
             <div className="tracking-tight text-2xl font-bold">Write a New Post</div>
           </div>
           <div className="p-4 pt-0">
-            <form className="space-y-5 max-h-screen overflow-auto" onSubmit={handleSubmit(onSubmit)}>
+            <form
+              className="space-y-5 max-h-screen overflow-auto"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   Title (English)
@@ -148,12 +158,15 @@ const WritePage: React.FC = () => {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
+              <button 
+              type="submit"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
+              disabled={mutation.status === "pending"}
               >
-                Publish Post
+                {mutation.status === "pending" ? "Publishing..." : "Publish Post"}
               </button>
+
+
             </form>
           </div>
         </div>
