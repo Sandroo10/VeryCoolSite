@@ -27,6 +27,8 @@ i18n.use(initReactI18next).init({
         mainPage: {
           futureBlockchain: "The Future of Blockchain Technology",
           coverImageAlt: "Cover image for The Future of Blockchain Technology",
+          search: "Search",
+          searchPlaceholder: "Search for blogs...",
           author: "John Doe",
           publicationDate: "May 15, 2023",
           readTime: "5 min read",
@@ -135,6 +137,8 @@ i18n.use(initReactI18next).init({
         mainPage: {
           futureBlockchain: "ბლოკჩეინ ტექნოლოგიის მომავალი",
           coverImageAlt: "სურათი ბლოკჩეინ ტექნოლოგიის მომავლისთვის",
+          search: "ძებნა",
+          searchPlaceholder: "ძიება ბლოგებში...",
           author: "ჯონ დოუ",
           publicationDate: "15 მაისი, 2023",
           readTime: "5 წთ კითხვისთვის",

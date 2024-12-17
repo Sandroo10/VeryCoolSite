@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Naruto from "../assets/naruto.jfif";
 import Ichigo from "../assets/Ichigo.jfif";
 import Luffy from "../assets/Luffy.png";
 import { supabase } from "../supabase";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/ka";
+import underscore from "underscore";
+import qs from "qs";
+
+
+dayjs.extend(relativeTime);
 
 type BlogPost = {
   id: number;
@@ -22,7 +30,42 @@ const MainPage: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = qs.parse(location.search, { ignoreQueryPrefix: true });
+    if (params.search) {
+      setSearchText(params.search as string);
+      fetchFilteredBlogs(params.search as string);
+    }
+  }, [location.search]);
+
+  const fetchFilteredBlogs = useCallback(
+    underscore.debounce(async (value: string) => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("blogs")
+          .select("*")
+          .or(`title_en.ilike.%${value}%,title_ka.ilike.%${value}%`) 
+          .order("created_at", { ascending: false });
+  
+        if (error) throw error;
+        setBlogs(data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch filtered blogs");
+      } finally {
+        setLoading(false);
+      }
+    }, 500),
+    []
+  );
+  
+  
   useEffect(() => {
     const fetchBlogs = async () => {
       setLoading(true);
@@ -49,11 +92,48 @@ const MainPage: React.FC = () => {
   if (error) return <div>{error}</div>;
   const isGeorgian = i18n.language === "ka";
 
+  const formatDate = (date: string | null) => {
+    if (!date) return "Unknown Date";
+    const blogDate = dayjs(date);
+    const now = dayjs();
+
+    if (now.diff(blogDate, "day") < 1) {
+      return blogDate.from(now); 
+    } else {
+      return blogDate.format("HH:mm - DD/MM/YYYY"); 
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    const newQueryString = qs.stringify({ search: value }, { skipNulls: true });
+    navigate(`?${newQueryString}`, { replace: true });
+  
+    fetchFilteredBlogs(value);
+  };
+  
+  
+
 
   return (
     <main className="px-4 py-8 flex-grow">
       <div className="container mx-auto flex flex-col md:flex-row gap-8">
       <section className="md:w-2/3 space-y-8 flex flex-col">
+      <div className="space-y-2 mb-4">
+  <label htmlFor="search" className="block text-sm font-medium">
+    {t("mainPage.search")}
+  </label>
+  <input
+    type="text"
+    id="search"
+    value={searchText}
+    onChange={handleSearchChange}
+    placeholder={t("mainPage.searchPlaceholder")}
+    className="w-full p-2 border rounded-md text-black dark:text-white bg-transparent 
+               focus:outline-none focus:ring-2 focus:ring-primary"
+  />
+</div>
           {blogs.map((blog) => (
             <Link key={blog.id} to={`/posts/${blog.id}`}>
               <div className="rounded-xl border bg-card text-card-foreground shadow">
@@ -77,7 +157,7 @@ const MainPage: React.FC = () => {
                   <Link to={`/author/${blog.user_id || "unknown"}`}>
                     {blog.user_id ? t("mainPage.author") : "Unknown Author"}
                   </Link>
-                  <span>{blog.created_at ? new Date(blog.created_at).toLocaleDateString() : "Unknown Date"}</span>
+                  <span>{formatDate(blog.created_at)}</span>
                 </div>
                 <div className="flex items-center p-6 pt-0">
                   <div className="flex space-x-2">
