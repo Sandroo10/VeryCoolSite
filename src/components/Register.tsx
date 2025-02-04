@@ -1,17 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { register } from "../supabase/auth";
-
+import { useSignUp } from "../reactQuery/mutation/auth";
 const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
 
-  const { mutate: handleRegister } = useMutation({
-    mutationKey: ["register"],
-    mutationFn: register,
-  });
+
+
+  const {mutate:handleRegister} = useSignUp()
 
   const {
     register: formRegister,

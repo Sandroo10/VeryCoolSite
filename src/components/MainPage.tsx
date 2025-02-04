@@ -1,95 +1,72 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Naruto from "../assets/naruto.jfif";
 import Ichigo from "../assets/Ichigo.jfif";
 import Luffy from "../assets/Luffy.png";
-import { supabase } from "../supabase";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ka";
 import underscore from "underscore";
 import qs from "qs";
+import { useGetBlogsList } from "../reactQuery/query/posts";
+import { BlogsFilterValueTypes, Post } from "../supabase/blogs";
+import { Controller, useForm } from "react-hook-form";
+import { DASHBOARD_PATHS } from "../routes/dashboard/index.enum";
 
 
 dayjs.extend(relativeTime);
 
-type BlogPost = {
-  id: number;
-  title_en: string | null;
-  title_ka: string | null;
-  description_en: string | null;
-  description_ka: string | null;
-  image_url: string | null;
-  user_id: string | null;
-  created_at: string | null;
-};
+
 
 const MainPage: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchText, setSearchText] = useState("");
 
-  const navigate = useNavigate();
-  const location = useLocation();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const parsedQueryParams = qs.parse(searchParams.toString());
+
+  
+  const { control, watch } = useForm<BlogsFilterValueTypes>({
+    defaultValues: {
+      searchText: parsedQueryParams?.searchedtext?.toString(),
+    },
+  });
+
+  const watchedSearchText = watch("searchText") || "";
+
+  const [debouncedSearchText, setDebouncedSearchText] = useState(watchedSearchText);
+
 
   useEffect(() => {
-    const params = qs.parse(location.search, { ignoreQueryPrefix: true });
-    if (params.search) {
-      setSearchText(params.search as string);
-      fetchFilteredBlogs(params.search as string);
-    }
-  }, [location.search]);
+    const handler = underscore.debounce(() => {
+      setDebouncedSearchText(watchedSearchText);
+    }, 1000);
 
-  const fetchFilteredBlogs = useCallback(
-    underscore.debounce(async (value: string) => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("blogs")
-          .select("*")
-          .or(`title_en.ilike.%${value}%,title_ka.ilike.%${value}%`) 
-          .order("created_at", { ascending: false });
+    handler();
+
+    // Cancel debounce on component unmount or watchedSearchText change
+    return () => handler.cancel();
+  }, [watchedSearchText]);
+
+
+    // Update query parameters
+    useEffect(() => {
+      const queryString = qs.stringify(
+        { searchedtext: debouncedSearchText },
+        {
+          skipNulls: true,
+          filter: (_, value) => value || undefined,
+        }
+      );
+      setSearchParams(queryString);
+    }, [debouncedSearchText]);
+
+
   
-        if (error) throw error;
-        setBlogs(data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch filtered blogs");
-      } finally {
-        setLoading(false);
-      }
-    }, 500),
-    []
-  );
-  
-  
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("blogs")
-          .select("*")
-          .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        setBlogs(data || []);
-      } catch (err) {
-        setError("Failed to fetch blogs");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchBlogs();
-  }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
   const isGeorgian = i18n.language === "ka";
 
   const formatDate = (date: string | null) => {
@@ -104,17 +81,21 @@ const MainPage: React.FC = () => {
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchText(value);
-    const newQueryString = qs.stringify({ search: value }, { skipNulls: true });
-    navigate(`?${newQueryString}`, { replace: true });
-  
-    fetchFilteredBlogs(value);
+
+
+  const mapBlogsList = (data: Post[]) => {
+    return data.map((blog) => ({
+      ...blog,
+      created_at: formatDate(blog.created_at),
+    }));
   };
   
-  
+  const { data: blogs = [], isLoading, error } = useGetBlogsList({ queryOptions: { select: mapBlogsList ,refetchOnWindowFocus: false } }, debouncedSearchText);
 
+  if(isLoading){
+    return <h1>Loading...</h1>
+  }
+  if (error) {return <div>error</div>;}
 
   return (
     <main className="px-4 py-8 flex-grow">
@@ -124,15 +105,19 @@ const MainPage: React.FC = () => {
   <label htmlFor="search" className="block text-sm font-medium">
     {t("mainPage.search")}
   </label>
-  <input
-    type="text"
-    id="search"
-    value={searchText}
-    onChange={handleSearchChange}
-    placeholder={t("mainPage.searchPlaceholder")}
-    className="w-full p-2 border rounded-md text-black dark:text-white bg-transparent 
-               focus:outline-none focus:ring-2 focus:ring-primary"
-  />
+      <Controller
+      name="searchText"
+      control={control}
+      render={({ field }) => (
+        <input
+          {...field}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+          id="title"
+          placeholder="Enter search text..."
+          required
+        />
+      )}
+    />
 </div>
           {blogs.map((blog) => (
             <Link key={blog.id} to={`/posts/${blog.id}`}>
@@ -154,7 +139,7 @@ const MainPage: React.FC = () => {
                       : (blog.description_en || "No description available").slice(0, 150)}
                     ...
                   </p>
-                  <Link to={`/author/${blog.user_id || "unknown"}`}>
+                  <Link to={`/${DASHBOARD_PATHS.AUTHOR}/${blog.user_id || "unknown"}`}>
                     {blog.user_id ? t("mainPage.author") : "Unknown Author"}
                   </Link>
                   <span>{formatDate(blog.created_at)}</span>

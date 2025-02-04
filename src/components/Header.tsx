@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { ModeToggle } from './mode-toggle/index';
 import { cn } from "../lib/utils"
 import { Check } from "lucide-react"
-import { logout } from '../supabase/auth';
 import {
   Command,
   CommandEmpty,
@@ -29,7 +28,8 @@ import {
   PopoverTrigger,
 } from "./ui/popover"
 import { useAuth } from './context/AuthContext';
-import { useMutation } from '@tanstack/react-query';
+import { useSignOut } from '../reactQuery/mutation/auth';
+import { DASHBOARD_PATHS } from '../routes/dashboard/index.enum';
  
 const frameworks = [
   {
@@ -64,10 +64,9 @@ const Header: React.FC = () => {
     i18n.changeLanguage(language);
     localStorage.setItem('language', language); 
   };
-  const {mutate:handleLougout} = useMutation({
-    mutationKey:['logout'],
-    mutationFn: logout, 
-  })
+  
+    const { mutate: signOut } = useSignOut();
+
   const avatardefault = createAvatar(avataaars, {
     seed: 'Aneka'
   });
@@ -85,10 +84,10 @@ const Header: React.FC = () => {
           <a className="text-gray-400 " href="/">
             {t('home')}
           </a>
-          <a className="text-gray-400 " href="/write">
+          <a className="text-gray-400 " href={DASHBOARD_PATHS.WRITE}>
             {t('write')}
           </a>
-          <a className="text-gray-400 " href="/about">
+          <a className="text-gray-400 " href={DASHBOARD_PATHS.ABOUT}>
             {t('about')}
           </a>
         </nav>
@@ -154,13 +153,13 @@ const Header: React.FC = () => {
             <div>
               {user ? (
                 <div className='flex items-center'>
-                  <Link className="text-white" to="/profile">
+                  <Link className="text-white" to={DASHBOARD_PATHS.PROFILE}>
                   <Avatar >
                   <AvatarImage src={avatar} />
                   <AvatarFallback><img src={svg}/></AvatarFallback>
                 </Avatar>
                   </Link>
-                  <button onClick={() => handleLougout()} className="bg-blue-500 px-4 py-2 rounded-md">Logout</button>
+                  <button onClick={() => signOut()} className="bg-blue-500 px-4 py-2 rounded-md">Logout</button>
                 </div>
               ) : (
                 <Link className="text-white" to="/signin">

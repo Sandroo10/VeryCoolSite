@@ -1,22 +1,15 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMutation } from "@tanstack/react-query";
+
 import { useForm } from "react-hook-form";
-import { login } from "../supabase/auth";
+import { useSignIn } from "../reactQuery/mutation/auth";
 
 const SignInPage: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
-  const { mutate: handleLogin } = useMutation({
-    mutationKey: ["login"],
-    mutationFn: login,
-    onSuccess: () => {
-      navigate("/");
-    },
-  });
-
+  const { mutate:signin } = useSignIn();
+  
   const {
     register,
     handleSubmit,
@@ -28,10 +21,11 @@ const SignInPage: React.FC = () => {
     },
   });
 
+
   const onSubmit = (data: { email: string; password: string }) => {
     const { email, password } = data;
     if (email && password) {
-      handleLogin(data);
+      signin(data);
     }
   };
 
